@@ -16,3 +16,6 @@ dbt_packages/
 .DS_Store
 .idea/
 .vscode/
+
+configs/snowflake_config.py
+.env
