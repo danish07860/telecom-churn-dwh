@@ -1,11 +1,19 @@
-from spark_jobs.utils.spark_session import create_spark_session
+
 from pyspark.sql.functions import col
+import sys
+import os
 
-
+sys.path.append(
+    os.path.abspath(
+        os.path.join(os.path.dirname(__file__), "../..")
+    )
+)
+from spark_jobs.utils.logger import get_logger
+from spark_jobs.utils.spark_session import create_spark_session
 spark = create_spark_session(
     "TelecomCustomerIngestion"
 )
-
+logger = get_logger(__name__)
 
 df = spark.read.csv(
     "data/raw/customers.csv",
@@ -41,7 +49,7 @@ cleaned_df.write.mode("overwrite").parquet(
     "data/processed/customers"
 )
 
-print("Customer ingestion completed successfully")
+logger.info("Customer ingestion completed successfully")
 
 
 spark.stop()
