@@ -1,21 +1,29 @@
+# Python
 venv/
 __pycache__/
 *.pyc
 
+# Airflow
 .airflow/
 logs/
 
+# Environment Variables
 .env
 
+# Data Files
 data/raw/
 data/processed/
 
+# dbt
 target/
 dbt_packages/
 
+# OS Files
 .DS_Store
+
+# IDE
 .idea/
 .vscode/
 
+# Snowflake Credentials
 configs/snowflake_config.py
-.env
