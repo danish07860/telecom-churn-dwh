@@ -1,0 +1,23 @@
+version: 2
+
+models:
+  - name: mart_churn_signals
+    description: >
+      Business mart containing customer churn risk indicators
+      derived from complaints, recharge behavior, and call activity.
+    columns:
+      - name: customer_id
+        description: Unique customer identifier.
+        tests:
+          - unique
+          - not_null
+      - name: customer_name
+        description: Telecom customer full name.
+      - name: total_complaints
+        description: Total complaints raised by customer.
+      - name: avg_recharge_amount
+        description: Average recharge amount by customer.
+      - name: avg_call_duration
+        description: Average telecom call duration.
+      - name: churn_risk
+        description: Derived churn risk classification.

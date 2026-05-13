@@ -2,15 +2,24 @@ version: 2
 
 models:
   - name: fact_calls
-
+    description: >
+      Analytical fact table containing telecom call activity,
+      customer call metrics, and usage classifications.
     columns:
       - name: call_id
-
+        description: Unique identifier for each telecom call.
         tests:
           - unique
           - not_null
-
       - name: customer_id
-
+        description: Foreign key reference to dim_customer.
         tests:
           - not_null
+      - name: call_timestamp
+        description: Timestamp of telecom call activity.
+      - name: call_duration_minutes
+        description: Duration of call in minutes.
+      - name: network_type
+        description: Telecom network used during call.
+      - name: call_category
+        description: Derived call duration classification.

@@ -1,61 +1,145 @@
-# from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, upper
+from pyspark.sql.functions import (
+    col,
+    upper,
+    to_timestamp
+)
 
 import sys
 import os
 
+
 sys.path.append(
     os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "../..")
+        os.path.join(
+            os.path.dirname(__file__),
+            "../.."
+        )
     )
 )
-from spark_jobs.utils.spark_session import create_spark_session
-spark = create_spark_session(
-    "TelecomCallsIngestion"
+
+from spark_jobs.utils.spark_session import (
+    create_spark_session
 )
 
-# # Create Spark session
-# spark = SparkSession.builder \
-#     .appName("TelecomCallsIngestion") \
-#     .getOrCreate()
 
-# Read raw calls CSV
+# -----------------------------
+# Spark Session
+# -----------------------------
+spark = create_spark_session(
+    "TelecomCallsIncrementalIngestion"
+)
+
+
+# -----------------------------
+# Read Raw Calls CSV
+# -----------------------------
 df = spark.read.csv(
     "data/raw/calls.csv",
     header=True,
     inferSchema=True
 )
 
-# print("Raw Schema:")
-# df.printSchema()
 
-# Remove duplicates
-cleaned_df = df.dropDuplicates()
-
-
-cleaned_df = cleaned_df.filter(
-    col("call_duration_minutes") > 0
+# -----------------------------
+# Convert Timestamp
+# -----------------------------
+df = df.withColumn(
+    "created_at",
+    to_timestamp(col("created_at"))
 )
 
 
-cleaned_df = cleaned_df.withColumn(
-    "network_type",
-    upper(col("network_type"))
+# -----------------------------
+# Read Last Watermark
+# -----------------------------
+watermark_file = (
+    "metadata/calls_watermark.txt"
+)
+
+with open(watermark_file, "r") as f:
+
+    last_watermark = (
+        f.read().strip()
+    )
+
+
+print(
+    f"Last watermark: {last_watermark}"
 )
 
 
-cleaned_df = cleaned_df.fillna({
-    "tower_location": "UNKNOWN"
-})
+# -----------------------------
+# Incremental Filtering
+# -----------------------------
+incremental_df = df.filter(
+    col("created_at") > last_watermark
+)
 
-# print("Cleaned Calls Preview:")
-# cleaned_df.show(5)
+
+print(
+    f"New records found: "
+    f"{incremental_df.count()}"
+)
 
 
-cleaned_df.write.mode("overwrite").parquet(
+# -----------------------------
+# Cleaning Logic
+# -----------------------------
+cleaned_df = (
+    incremental_df
+    .dropDuplicates()
+    .filter(
+        col("call_duration_minutes") > 0
+    )
+    .withColumn(
+        "network_type",
+        upper(col("network_type"))
+    )
+    .fillna({
+        "tower_location": "UNKNOWN"
+    })
+)
+
+
+# -----------------------------
+# Append Parquet
+# -----------------------------
+cleaned_df.write.mode(
+    "append"
+).parquet(
     "data/processed/calls"
 )
 
-print("Calls ingestion completed successfully")
+
+# -----------------------------
+# Update Watermark
+# -----------------------------
+max_timestamp = cleaned_df.agg(
+    {
+        "created_at": "max"
+    }
+).collect()[0][0]
+
+
+if max_timestamp:
+
+    with open(
+        watermark_file,
+        "w"
+    ) as f:
+
+        f.write(
+            str(max_timestamp)
+        )
+
+    print(
+        f"Updated watermark: "
+        f"{max_timestamp}"
+    )
+
+
+print(
+    "Incremental calls ingestion completed"
+)
 
 spark.stop()

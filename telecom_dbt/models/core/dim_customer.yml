@@ -2,10 +2,31 @@ version: 2
 
 models:
   - name: dim_customer
-
+    description: >
+      Customer dimension table containing customer demographic,
+      subscription, and segmentation attributes used across
+      analytical fact tables.
     columns:
       - name: customer_id
-
+        description: Unique identifier for each telecom customer.
         tests:
           - unique
           - not_null
+      - name: customer_name
+        description: Full name of the telecom customer.
+      - name: gender
+        description: Standardized customer gender value.
+      - name: age
+        description: Customer age in years.
+      - name: city
+        description: Customer city location.
+      - name: state
+        description: Customer state location.
+      - name: plan_type
+        description: Telecom subscription plan type.
+      - name: monthly_charges
+        description: Monthly billing amount for customer plan.
+      - name: tenure_months
+        description: Number of months customer has remained active.
+      - name: customer_segment
+        description: Derived customer loyalty classification.
