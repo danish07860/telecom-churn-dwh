@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+  - name: telecom_staging
+    database: TELECOM_DWH
+    schema: STAGING
+
+    tables:
+      - name: stg_customers
+      - name: stg_calls
+      - name: stg_complaints
+      - name: stg_recharges

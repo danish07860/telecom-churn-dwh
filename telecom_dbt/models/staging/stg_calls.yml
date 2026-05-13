@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: stg_calls
+
+    columns:
+      - name: call_id
+
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_id
+
+        tests:
+          - not_null
