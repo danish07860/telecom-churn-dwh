@@ -122,13 +122,22 @@ logger.info(
     f"{len(incremental_df)}"
 )
 
+if incremental_df.empty:
 
+    logger.info(
+        "No new records found"
+    )
+
+    cur.close()
+    conn.close()
+
+    sys.exit(0)
 # -----------------------------
 # Create Staging Table
 # -----------------------------
 cur.execute("""
 
-CREATE TABLE IF NOT EXISTS stg_calls (
+CREATE TABLE IF NOT EXISTS STAGING.stg_calls (
 
     call_id INTEGER,
     customer_id INTEGER,
@@ -150,49 +159,62 @@ logger.info(
 
 
 # -----------------------------
-# Insert Incremental Records
+# Export Incremental CSV
 # -----------------------------
-for _, row in incremental_df.iterrows():
+temp_csv_path = os.path.join(
+    BASE_DIR,
+    "temp_calls_incremental.csv"
+)
 
-    cur.execute("""
-
-    INSERT INTO stg_calls (
-
-        call_id,
-        customer_id,
-        call_date,
-        call_duration_minutes,
-        network_type,
-        call_drop_flag,
-        tower_location,
-        created_at
-
-    )
-
-    VALUES (
-
-        %s, %s, %s, %s,
-        %s, %s, %s, %s
-
-    )
-
-    """, (
-
-        int(row["call_id"]),
-        int(row["customer_id"]),
-        row["call_date"].to_pydatetime(),
-        float(row["call_duration_minutes"]),
-        row["network_type"],
-        int(row["call_drop_flag"]),
-        row["tower_location"],
-        row["created_at"].to_pydatetime()
-
-    ))
-
+incremental_df.to_csv(
+    temp_csv_path,
+    index=False
+)
 
 logger.info(
-    "Incremental records loaded"
+    "Temporary incremental CSV created"
 )
+
+
+# -----------------------------
+# Upload File To Stage
+# -----------------------------
+put_command = f"""
+
+PUT file://{temp_csv_path}
+@calls_stage
+OVERWRITE = TRUE
+
+"""
+
+cur.execute(put_command)
+
+logger.info(
+    "File uploaded to Snowflake stage"
+)
+
+
+# -----------------------------
+# Bulk Load Using COPY INTO
+# -----------------------------
+copy_command = """
+
+COPY INTO STAGING.stg_calls
+
+FROM @STAGING.calls_stage/temp_calls_incremental.csv
+
+FILE_FORMAT = (
+    FORMAT_NAME = STAGING.calls_csv_format
+)
+
+"""
+
+cur.execute(copy_command)
+
+logger.info(
+    "COPY INTO bulk loading completed"
+)
+
 
 
 # -----------------------------
@@ -224,9 +246,19 @@ if len(incremental_df) > 0:
 # -----------------------------
 conn.commit()
 
-cur.close()
-conn.close()
+
 
 logger.info(
     "Snowflake connection closed"
 )
+
+if os.path.exists(temp_csv_path):
+
+    os.remove(temp_csv_path)
+
+    logger.info(
+        "Temporary CSV removed"
+    )
+
+cur.close()
+conn.close()
