@@ -1,21 +1,48 @@
+{{
+
+    config(
+
+        materialized='incremental',
+
+        unique_key='recharge_id'
+
+    )
+
+}}
+
+
 SELECT
 
-r.recharge_id,
-r.customer_id,
-d.customer_name,
-d.customer_segment,
-r.recharge_timestamp,
-r.recharge_amount,
-r.payment_mode,
-r.successful_flag,
+    recharge_id,
 
-    CASE
-        WHEN r.recharge_amount >= 500 THEN 'HIGH_VALUE'
-        WHEN r.recharge_amount >= 200 THEN 'MEDIUM_VALUE'
-        ELSE 'LOW_VALUE'
-    END AS recharge_category
+    customer_id,
 
-FROM {{ ref('stg_recharges') }} r
+    recharge_date,
 
-LEFT JOIN {{ ref('dim_customer') }} d
-    ON r.customer_id = d.customer_id
+    recharge_amount,
+
+    payment_mode,
+
+    successful_flag,
+
+    created_at
+
+FROM {{ source('staging', 'stg_recharges') }}
+
+
+{% if is_incremental() %}
+
+WHERE created_at >
+
+(
+
+    SELECT COALESCE(
+        MAX(created_at),
+        '1900-01-01'
+    )
+
+    FROM {{ this }}
+
+)
+
+{% endif %}

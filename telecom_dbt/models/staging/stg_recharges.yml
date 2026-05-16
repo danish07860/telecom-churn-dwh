@@ -13,4 +13,21 @@ models:
       - name: customer_id
 
         tests:
-          - not_null
+          - not_nullversion: 2
+
+
+sources:
+
+  - name: staging
+
+    database: TELECOM_DWH
+
+    schema: STAGING
+
+    tables:
+
+      - name: stg_recharges
+
+      - name: stg_calls
+
+
