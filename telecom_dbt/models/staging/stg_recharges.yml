@@ -1,21 +1,5 @@
 version: 2
 
-models:
-  - name: stg_recharges
-
-    columns:
-      - name: recharge_id
-
-        tests:
-          - unique
-          - not_null
-
-      - name: customer_id
-
-        tests:
-          - not_nullversion: 2
-
-
 sources:
 
   - name: staging
@@ -28,6 +12,20 @@ sources:
 
       - name: stg_recharges
 
-      - name: stg_calls
 
+models:
 
+  - name: stg_recharges
+
+    columns:
+
+      - name: recharge_id
+
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_id
+
+        tests:
+          - not_null

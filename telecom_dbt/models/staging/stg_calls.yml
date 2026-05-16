@@ -1,5 +1,17 @@
 version: 2
 
+sources:
+
+  - name: staging
+
+    database: TELECOM_DWH
+
+    schema: STAGING
+
+    tables:
+
+      - name: stg_calls
+
 models:
   - name: stg_calls
 

@@ -2,28 +2,30 @@
 
     materialized='incremental',
 
-    unique_key='recharge_id'
+    unique_key='call_id'
 
 ) }}
 
 
 SELECT
 
-    recharge_id,
+    call_id,
 
     customer_id,
 
-    recharge_date,
+    call_date,
 
-    recharge_amount,
+    call_duration_minutes,
 
-    payment_mode,
+    network_type,
 
-    successful_flag,
+    call_drop_flag,
+
+    tower_location,
 
     created_at
 
-FROM {{ source('staging', 'stg_recharges') }}
+FROM {{ source('staging', 'stg_calls') }}
 
 
 {% if is_incremental() %}

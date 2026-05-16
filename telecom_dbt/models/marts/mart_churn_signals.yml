@@ -11,7 +11,7 @@ models:
         tests:
           - unique
           - not_null
-      - name: customer_name
+      - name: customer_full_name
         description: Telecom customer full name.
       - name: total_complaints
         description: Total complaints raised by customer.

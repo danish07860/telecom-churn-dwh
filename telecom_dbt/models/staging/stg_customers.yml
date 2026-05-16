@@ -1,5 +1,18 @@
 version: 2
 
+sources:
+
+  - name: staging
+
+    database: TELECOM_DWH
+
+    schema: STAGING
+
+    tables:
+
+      - name: stg_customers
+
+
 models:
   - name: stg_customers
 

@@ -1,5 +1,16 @@
 version: 2
 
+sources:
+
+  - name: staging
+
+    database: TELECOM_DWH
+
+    schema: STAGING
+
+    tables:
+
+      - name: stg_complaints
 models:
   - name: stg_complaints
 

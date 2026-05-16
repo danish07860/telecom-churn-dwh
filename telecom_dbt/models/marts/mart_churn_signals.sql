@@ -1,3 +1,5 @@
+{{ config(materialized='table') }}
+
 WITH complaint_summary AS (
 
     SELECT
@@ -40,7 +42,7 @@ SELECT
 
     d.customer_id,
 
-    d.customer_name,
+    d.customer_full_name,
 
     d.customer_segment,
 
