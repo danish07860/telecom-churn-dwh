@@ -1,15 +1,10 @@
-{{
+{{ config(
 
-    config(
+    materialized='incremental',
 
-        materialized='incremental',
+    unique_key='recharge_id'
 
-        unique_key='recharge_id'
-
-    )
-
-}}
-
+) }}
 
 SELECT
 
@@ -27,7 +22,7 @@ SELECT
 
     created_at
 
-FROM {{ source('staging', 'stg_recharges') }}
+FROM {{ ref('stg_recharges') }}
 
 
 {% if is_incremental() %}

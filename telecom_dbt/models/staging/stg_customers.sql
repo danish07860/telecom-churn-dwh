@@ -1,3 +1,16 @@
+WITH deduplicated AS (
+
+    SELECT *,
+
+           ROW_NUMBER() OVER (
+               PARTITION BY customer_id
+               ORDER BY created_at DESC
+           ) AS rn
+
+    FROM {{ source('telecom_staging', 'stg_customers') }}
+
+)
+
 SELECT
 
     customer_id,
@@ -18,6 +31,10 @@ SELECT
 
     tenure_months,
 
-    is_active
+    is_active,
 
-FROM {{ source('telecom_staging', 'stg_customers') }}
+    created_at
+
+FROM deduplicated
+
+WHERE rn = 1

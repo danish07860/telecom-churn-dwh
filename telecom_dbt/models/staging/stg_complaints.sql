@@ -1,3 +1,16 @@
+WITH deduplicated AS (
+
+    SELECT *,
+
+           ROW_NUMBER() OVER (
+               PARTITION BY complaint_id
+               ORDER BY created_at DESC
+           ) AS rn
+
+    FROM {{ source('telecom_staging', 'stg_complaints') }}
+
+)
+
 SELECT
 
     complaint_id,
@@ -10,6 +23,10 @@ SELECT
 
     LOWER(status) AS complaint_status,
 
-    resolution_time_hours
+    resolution_time_hours,
 
-FROM {{ source('telecom_staging', 'stg_complaints') }}
+    created_at
+
+FROM deduplicated
+
+WHERE rn = 1

@@ -42,9 +42,7 @@ SELECT
 
     d.customer_id,
 
-    d.customer_full_name,
-
-    d.customer_segment,
+    d.customer_name,
 
     d.plan_type,
 

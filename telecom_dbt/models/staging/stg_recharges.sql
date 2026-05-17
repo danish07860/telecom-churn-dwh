@@ -10,6 +10,8 @@ SELECT
 
     LOWER(payment_mode) AS payment_mode,
 
-    successful_flag
+    successful_flag,
+
+    created_at
 
 FROM {{ source('telecom_staging', 'stg_recharges') }}

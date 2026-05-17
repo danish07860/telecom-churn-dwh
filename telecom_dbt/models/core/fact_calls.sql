@@ -6,7 +6,6 @@
 
 ) }}
 
-
 SELECT
 
     call_id,
@@ -25,7 +24,7 @@ SELECT
 
     created_at
 
-FROM {{ source('staging', 'stg_calls') }}
+FROM {{ ref('stg_calls') }}
 
 
 {% if is_incremental() %}
@@ -34,7 +33,10 @@ WHERE created_at >
 
 (
 
-    SELECT MAX(created_at)
+    SELECT COALESCE(
+        MAX(created_at),
+        '1900-01-01'
+    )
 
     FROM {{ this }}
 

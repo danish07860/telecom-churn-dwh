@@ -12,6 +12,8 @@ SELECT
 
     call_drop_flag,
 
-    INITCAP(tower_location) AS tower_location
+    INITCAP(tower_location) AS tower_location,
+
+    created_at
 
 FROM {{ source('telecom_staging', 'stg_calls') }}

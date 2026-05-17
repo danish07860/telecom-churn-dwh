@@ -2,30 +2,35 @@
 
     materialized='incremental',
 
-    unique_key='call_id'
+    unique_key='customer_id'
 
 ) }}
 
-
 SELECT
-
-    call_id,
 
     customer_id,
 
-    call_date,
+    customer_name,
 
-    call_duration_minutes,
+    gender,
 
-    network_type,
+    age,
 
-    call_drop_flag,
+    city,
 
-    tower_location,
+    state,
+
+    plan_type,
+
+    monthly_charges,
+
+    tenure_months,
+
+    is_active,
 
     created_at
 
-FROM {{ source('staging', 'stg_calls') }}
+FROM {{ ref('stg_customers') }}
 
 
 {% if is_incremental() %}
@@ -34,7 +39,10 @@ WHERE created_at >
 
 (
 
-    SELECT MAX(created_at)
+    SELECT COALESCE(
+        MAX(created_at),
+        '1900-01-01'
+    )
 
     FROM {{ this }}
 

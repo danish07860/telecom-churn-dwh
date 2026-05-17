@@ -6,22 +6,19 @@
 
 ) }}
 
-
 SELECT
 
     c.complaint_id,
 
     c.customer_id,
 
-    d.customer_full_name,
-
-    d.customer_segment,
+    d.customer_name,
 
     c.complaint_type,
 
-    c.complaint_date,
+    c.complaint_timestamp,
 
-    c.status,
+    c.complaint_status,
 
     c.resolution_time_hours,
 
@@ -37,7 +34,7 @@ SELECT
 
     END AS complaint_severity
 
-FROM {{ source('staging', 'stg_complaints') }} c
+FROM {{ ref('stg_complaints') }} c
 
 LEFT JOIN {{ ref('dim_customer') }} d
 
@@ -50,7 +47,10 @@ WHERE c.created_at >
 
 (
 
-    SELECT MAX(created_at)
+    SELECT COALESCE(
+        MAX(created_at),
+        '1900-01-01'
+    )
 
     FROM {{ this }}
 
