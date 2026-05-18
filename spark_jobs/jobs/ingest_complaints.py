@@ -1,39 +1,148 @@
-#from pyspark.sql import SparkSession
-from pyspark.sql.functions import upper, col
+from pyspark.sql.functions import (
+    upper,
+    col,
+    to_timestamp
+)
+
 import sys
 import os
 
-sys.path.append(
-    os.path.abspath(
-        os.path.join(os.path.dirname(__file__), "../..")
+
+BASE_DIR = os.path.abspath(
+
+    os.path.join(
+
+        os.path.dirname(__file__),
+
+        "../.."
+
     )
+
 )
-from spark_jobs.utils.spark_session import create_spark_session
+
+
+sys.path.append(BASE_DIR)
+
+
+from spark_jobs.utils.logger import (
+    get_logger
+)
+
+from spark_jobs.utils.spark_session import (
+    create_spark_session
+)
+
+
 spark = create_spark_session(
     "TelecomComplaintsIngestion"
 )
 
-# spark = SparkSession.builder \
-#     .appName("TelecomComplaintsIngestion") \
-#     .getOrCreate()
+logger = get_logger(__name__)
+
+
+RAW_PATH = os.path.join(
+
+    BASE_DIR,
+
+    "data/raw/complaints.csv"
+
+)
+
+
+PROCESSED_PATH = os.path.join(
+
+    BASE_DIR,
+
+    "data/processed/complaints"
+
+)
+
+
+WATERMARK_PATH = os.path.join(
+
+    BASE_DIR,
+
+    "metadata/complaints_watermark.txt"
+
+)
+
+
+logger.info(
+    "Loading raw complaints data"
+)
 
 
 df = spark.read.csv(
-    "data/raw/complaints.csv",
+
+    RAW_PATH,
+
     header=True,
+
     inferSchema=True
+
 )
 
-# print("Raw Schema:")
-# df.printSchema()
+
+df = df.withColumn(
+
+    "created_at",
+
+    to_timestamp(
+        col("created_at")
+    )
+
+)
 
 
-cleaned_df = df.dropDuplicates()
+with open(
+    WATERMARK_PATH,
+    "r"
+) as f:
+
+    last_watermark = (
+        f.read().strip()
+    )
+
+
+logger.info(
+    f"Last watermark: "
+    f"{last_watermark}"
+)
+
+
+incremental_df = df.filter(
+
+    col("created_at") > last_watermark
+
+)
+
+
+logger.info(
+    f"New complaint records: "
+    f"{incremental_df.count()}"
+)
+
+
+if incremental_df.count() == 0:
+
+    logger.info(
+        "No new complaint records found"
+    )
+
+    spark.stop()
+
+    sys.exit()
+
+
+cleaned_df = incremental_df.dropDuplicates()
 
 
 cleaned_df = cleaned_df.withColumn(
+
     "status",
+
     upper(col("status"))
+
 )
 
 
@@ -43,17 +152,48 @@ cleaned_df = cleaned_df.filter(
 
 
 cleaned_df = cleaned_df.fillna({
+
     "complaint_type": "UNKNOWN"
+
 })
 
-# print("Cleaned Complaints Preview:")
-# cleaned_df.show(5)
 
-
-cleaned_df.write.mode("overwrite").parquet(
-    "data/processed/complaints"
+cleaned_df.write.mode(
+    "append"
+).parquet(
+    PROCESSED_PATH
 )
 
-print("Complaints ingestion completed successfully")
+
+max_timestamp = cleaned_df.agg(
+
+    {
+        "created_at": "max"
+    }
+
+).collect()[0][0]
+
+
+if max_timestamp:
+
+    with open(
+        WATERMARK_PATH,
+        "w"
+    ) as f:
+
+        f.write(
+            str(max_timestamp)
+        )
+
+    logger.info(
+        f"Updated watermark: "
+        f"{max_timestamp}"
+    )
+
+
+logger.info(
+    "Complaints ingestion completed successfully"
+)
+
 
 spark.stop()

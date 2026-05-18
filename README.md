@@ -2,17 +2,32 @@
 
 ## Project Overview
 
-End-to-end Telecom Churn Data Warehouse built using Apache Spark, Snowflake, dbt, and Airflow following modern analytics engineering practices.
+End-to-end Telecom Churn Data Warehouse platform built using Apache Spark, Snowflake, dbt, and Apache Airflow following modern Data Engineering and Analytics Engineering practices.
 
-This project simulates a real-world telecom analytics platform for customer churn analysis using layered warehouse architecture, distributed data processing, and cloud data warehousing.
+This platform implements a production-style telecom analytics architecture capable of ingesting, transforming, validating, and modeling telecom operational data into business-ready analytics marts for churn analysis and reporting.
 
-The platform processes telecom customer activity data including:
+The project simulates real-world telecom customer activity data including:
 - Customer profiles
 - Call usage records
-- Complaints
 - Recharge transactions
+- Customer complaints
 
-The final goal of the project is to build scalable analytics pipelines and churn analysis marts using modern Data Engineering tools and dimensional modelling techniques.
+The platform is designed using layered warehouse architecture, distributed processing, incremental pipelines, and modular transformations.
+
+---
+
+# Business Problem
+
+Telecom companies generate massive volumes of customer interaction and operational data across multiple systems.
+
+Business teams require centralized analytics platforms capable of:
+- Monitoring customer activity
+- Detecting churn signals
+- Tracking complaints and service quality
+- Analyzing recharge behavior
+- Generating business intelligence dashboards
+
+This project simulates a production-grade telecom analytics platform that processes raw telecom activity data and transforms it into analytics-ready marts for downstream reporting and churn analysis.
 
 ---
 
@@ -21,35 +36,53 @@ The final goal of the project is to build scalable analytics pipelines and churn
 ```text
 Raw CSV Data
         ↓
-Apache Spark Ingestion
+Apache Spark Incremental Ingestion
         ↓
 Processed Parquet Layer
         ↓
 Snowflake STAGING Layer
         ↓
-dbt Transformations
+dbt STAGING Models
         ↓
-CORE Warehouse Layer
+dbt CORE Warehouse Models
         ↓
-MART Analytics Layer
+dbt MART Analytics Layer
         ↓
-Dashboard & Analytics
+Dashboard & Business Analytics
 ```
+
 ---
 
 # Tech Stack
 
 | Category | Technology |
 |---|---|
-| Data Processing | Apache Spark, PySpark |
-| Cloud Warehouse | Snowflake |
-| Transformations | dbt |
+| Distributed Processing | Apache Spark, PySpark |
+| Cloud Data Warehouse | Snowflake |
+| Data Transformations | dbt |
 | Orchestration | Apache Airflow |
-| Programming | Python, SQL |
+| Programming Languages | Python, SQL |
 | Storage Format | Parquet |
-| Data Generation | Faker |
+| Synthetic Data Generation | Faker |
 | Version Control | Git, GitHub |
-| Modelling | Dimensional Modelling, Kimball Star Schema |
+| Data Modeling | Kimball Star Schema |
+| Analytics Engineering | dbt |
+| Workflow Scheduling | Apache Airflow |
+
+---
+
+# Key Engineering Highlights
+
+- Fully orchestrated end-to-end data pipeline using Apache Airflow
+- Incremental PySpark ingestion framework with watermark tracking
+- Layered Snowflake warehouse architecture (STAGING → CORE → MART)
+- Modular dbt transformations with lineage tracking
+- Incremental warehouse models using dbt incremental materializations
+- Automated data quality validation using dbt tests
+- Deduplication and standardized transformation logic
+- Parquet-based processed data layer
+- TaskGroup-based Airflow orchestration
+- Production-style modular project structure
 
 ---
 
@@ -59,32 +92,37 @@ Dashboard & Analytics
 telecom-churn-dwh/
 │
 ├── airflow/
+│
 ├── architecture/
+│
 ├── dashboards/
+│
 ├── data/
 │   ├── raw/
 │   └── processed/
 │
 ├── data_generation/
-├── dbt/
-├── docs/
-├── notebooks/
+│
+├── metadata/
+│
+├── telecom_dbt/
 │
 ├── spark_jobs/
 │   ├── jobs/
 │   └── utils/
 │
-├── scripts/
-├── tests/
 ├── configs/
 │
-├── README.md
+├── screenshots/
+│
 ├── requirements.txt
+├── README.md
 └── .gitignore
 ```
+
 ---
 
-# Data Pipeline Flow
+# End-to-End Pipeline Flow
 
 ```text
 customers.csv
@@ -92,50 +130,63 @@ calls.csv
 complaints.csv
 recharges.csv
         ↓
-PySpark Ingestion Jobs
+PySpark Incremental Ingestion
         ↓
-Data Cleaning & Validation
+Data Cleaning & Standardization
         ↓
-Processed Parquet Files
+Processed Parquet Layer
         ↓
 Snowflake STAGING Tables
         ↓
-dbt CORE Models
+dbt STAGING Models
         ↓
-Business MARTS
+dbt CORE Warehouse Models
         ↓
-Analytics & Dashboards
+dbt MART Analytics Models
+        ↓
+Business Dashboards & Analytics
 ```
+
 ---
 
-# Current Features
+# Data Generation Layer
 
-## Data Generation Layer
-- Telecom customer data simulation using Faker
-- Synthetic datasets generation
-- Multiple telecom business entities simulated
+Synthetic telecom datasets are generated using Faker to simulate real-world telecom operations.
 
-Generated datasets:
+## Generated Datasets
+
 - customers.csv
 - calls.csv
 - complaints.csv
 - recharges.csv
 
+## Features
+
+- Randomized customer profiles
+- Telecom usage simulation
+- Complaint event simulation
+- Recharge transaction simulation
+- Scalable synthetic data generation
+
 ---
 
-## Spark Ingestion Framework
+# Spark Ingestion Framework
 
-### Features
+The Spark ingestion layer processes raw telecom datasets into standardized parquet datasets.
+
+## Spark Features
+
 - PySpark ingestion jobs
-- Schema inference
+- Incremental ingestion framework
+- Watermark-based processing
 - Duplicate removal
 - Data validation
-- Standardized transformations
-- Modular Spark architecture
-- Reusable Spark session utility
-- Structured logging utility
+- Schema standardization
+- Modular Spark session utility
+- Structured logging framework
 
-### Spark Jobs
+## Spark Jobs
+
 - ingest_customers.py
 - ingest_calls.py
 - ingest_complaints.py
@@ -145,7 +196,9 @@ Generated datasets:
 
 # Processed Data Layer
 
-Processed datasets stored in parquet format:
+Processed datasets are stored in parquet format for optimized downstream analytics processing.
+
+## Processed Paths
 
 ```text
 data/processed/customers/
@@ -159,9 +212,11 @@ data/processed/recharges/
 # Snowflake Warehouse Architecture
 
 ## Database
+
 ```sql
 TELECOM_DWH
 ```
+
 ## Schemas
 
 | Schema | Purpose |
@@ -174,61 +229,78 @@ TELECOM_DWH
 
 # dbt Transformation Layer
 
-The project uses dbt for modular SQL transformations, testing, lineage tracking, and warehouse modelling.
+The project uses dbt for modular SQL transformations, warehouse modeling, lineage tracking, and automated testing.
 
 ## dbt Features Implemented
+
 - Source definitions
-- Staging models
-- CORE dimensional models
+- STAGING models
+- CORE warehouse models
 - MART analytical models
 - Incremental materializations
-- Data quality tests
-- Automatic lineage documentation
+- Automated data quality tests
+- Lineage documentation
+- Warehouse dependency management
 
 ---
 
-## CORE Models
+# STAGING Models
 
-### Dimension Tables
-- dim_customers
+- stg_customers
+- stg_calls
+- stg_complaints
+- stg_recharges
 
-### Fact Tables
+---
+
+# CORE Models
+
+## Dimension Tables
+
+- dim_customer
+
+## Fact Tables
+
 - fact_calls
 - fact_complaints
 - fact_recharges
 
 ---
 
-## MART Models
+# MART Models
 
-### mart_churn_signals
+## mart_churn_signals
+
 Business-ready churn analytics mart combining:
-- Call activity
-- Complaint behavior
-- Recharge patterns
-- Customer activity indicators
+- Customer activity
+- Recharge behavior
+- Complaint severity
+- Call activity patterns
+- Customer engagement indicators
 
 ---
 
 # Incremental Pipeline Architecture
 
-The calls pipeline has been upgraded to a fully incremental architecture.
+The platform implements incremental processing across ingestion, warehousing, and transformation layers.
 
 ## Incremental Features
-- Append-only raw ingestion
-- Watermark-based processing
+
+- Append-only ingestion
+- Watermark tracking
 - Incremental Spark ingestion
 - Incremental parquet processing
 - Incremental Snowflake loading
-- Incremental dbt models
+- Incremental dbt transformations
 
 ---
 
-## Watermark Tracking
+# Watermark Tracking
 
-The pipeline maintains metadata-based watermark tracking to process only newly arrived records.
+Metadata-based watermark tracking is used to process only newly arrived records.
 
-Example:
+## Example Metadata Files
+
 ```text
 metadata/calls_watermark.txt
 metadata/snowflake_calls_watermark.txt
@@ -238,69 +310,168 @@ This simulates production-grade scalable ingestion architecture.
 
 ---
 
+# Airflow Orchestration
+
+The platform is fully orchestrated using Apache Airflow.
+
+## DAG Workflow
+
+```text
+data_generation_tasks
+        ↓
+spark_ingestion_tasks
+        ↓
+snowflake_loading_tasks
+        ↓
+dbt_transformation_tasks
+        ↓
+dbt_tests
+```
+
+## Airflow Features
+
+- Task Groups
+- Dependency management
+- Retry handling
+- Automated scheduling
+- Incremental orchestration
+- End-to-end DAG execution
+
+---
+
 # Data Engineering Concepts Implemented
 
-## Batch Processing
-- PySpark batch ingestion pipelines
+## Distributed Processing
+
+- Apache Spark distributed ingestion pipelines
 
 ## Incremental Processing
+
 - Watermark-based ingestion
-- Append-only pipelines
 - Stateful processing
+- Append-only pipelines
 
 ## Data Warehousing
+
 - Snowflake cloud warehouse
 - Layered warehouse architecture
-- STAR schema modelling
+- STAR schema modeling
 
 ## Analytics Engineering
+
 - dbt modular transformations
+- Incremental dbt models
 - Data quality testing
-- Incremental models
 - Lineage documentation
+
+## Orchestration
+
+- Apache Airflow DAG orchestration
+- Task dependency management
+- Pipeline automation
 
 ---
 
 # Data Quality Checks
 
-Implemented validations include:
+Implemented data validations include:
+
 - Duplicate removal
+- Deduplication logic
 - Null handling
 - Invalid recharge filtering
 - Invalid call duration filtering
-- Standardized categorical fields
+- Standardized categorical transformations
 - dbt uniqueness tests
 - dbt not-null tests
+
+---
+
+# Screenshots
+
+## Airflow DAG Orchestration
+
+```text
+screenshots/airflow_dag.png
+```
+
+## dbt Lineage Graph
+
+```text
+screenshots/dbt_lineage.png
+```
+
+## Snowflake Warehouse Tables
+
+```text
+screenshots/snowflake_warehouse.png
+```
+
+---
+
+# Running the Project
+
+## Start Airflow
+
+```bash
+airflow standalone
+```
+
+---
+
+## Run Spark Jobs
+
+```bash
+spark-submit spark_jobs/jobs/ingest_calls.py
+```
+
+---
+
+## Run dbt Models
+
+```bash
+dbt run
+```
+
+---
+
+## Run dbt Tests
+
+```bash
+dbt test
+```
+
+---
+
+## Generate dbt Documentation
+
+```bash
+dbt docs generate
+dbt docs serve
+```
 
 ---
 
 # Current Project Status
 
 ## Completed
-- Data generation pipelines
-- Spark ingestion framework
-- Snowflake warehouse setup
-- dbt warehouse transformations
-- Incremental calls pipeline
-- CORE and MART models
-- dbt lineage and documentation
 
-## In Progress
-- Airflow orchestration
-- Incremental standardization for all pipelines
-- Dashboard layer
-- CI/CD automation
+- End-to-end Airflow DAG orchestration
+- Incremental Spark ingestion pipelines
+- Incremental Snowflake warehouse loading
+- dbt STAGING, CORE, and MART transformations
+- Automated data quality testing
+- Watermark-based incremental processing
+- Modular warehouse architecture
+- Telecom churn analytics mart
 
 ---
 
-# Future Enhancements
+# Upcoming Enhancements
 
-- Apache Airflow DAG orchestration
-- SCD Type 2 implementation
-- Snowflake bulk loading using COPY INTO
-- Power BI / Streamlit dashboards
+- SCD Type 2 customer dimension
+- CI/CD pipeline automation
 - Dockerized deployment
-- GitHub Actions CI/CD
 - Pipeline monitoring and alerting
 
 ---
@@ -316,9 +487,17 @@ Processed Parquet Layer
         ↓
 Incremental Snowflake Loading
         ↓
-dbt Transformations
+dbt Warehouse Transformations
         ↓
 Business MART Generation
         ↓
 Analytics Consumption
 ```
+
+---
+
+# Conclusion
+
+This project demonstrates a modern end-to-end Data Engineering and Analytics Engineering platform using distributed processing, cloud warehousing, orchestration, incremental processing, and modular warehouse transformations.
+
+The platform follows production-oriented architecture patterns commonly used in modern cloud data platforms.
